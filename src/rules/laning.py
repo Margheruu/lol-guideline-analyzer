@@ -25,6 +25,27 @@ def _cs(pf: dict[str, Any]) -> int:
     return pf.get("minionsKilled", 0) + pf.get("jungleMinionsKilled", 0)
 
 
+@register("cs_per_minute")
+def cs_per_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
+    """Pass if CS-per-minute at a given minute meets the target (e.g. 7.5)."""
+    minute = int(params.get("minute", 15))
+    target = float(params.get("min_cs_per_min", 7.5))
+
+    me = _me(ctx)
+    frames = ctx.timeline["info"]["frames"]
+    frame = frames[min(minute, len(frames) - 1)]
+    cs = _cs(frame["participantFrames"][str(me["participantId"])])
+    cspm = cs / minute if minute else 0.0
+
+    passed = cspm >= target
+    score = min(cspm / target, 1.0) if target else 1.0
+    return RuleResult(
+        "cs_per_minute", passed, score,
+        f"{minute}分で {cs} CS（{cspm:.1f}/分、目標 {target:g}/分）。",
+        [Evidence(detail=f"CS={cs} ({cspm:.1f}/min)", timestamp_ms=minute * 60_000)],
+    )
+
+
 @register("not_behind_at_minute")
 def not_behind_at_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     """Pass if not significantly behind the lane opponent (gold) at a minute."""

@@ -1,7 +1,7 @@
 """Unit tests for the example rules."""
 from __future__ import annotations
 
-from src.rules.examples import cs_at_10, deaths_before_minute
+from src.rules.examples import deaths_before_minute
 
 
 def test_deaths_before_minute_passes_under_limit(ctx):
@@ -24,14 +24,3 @@ def test_deaths_window_excludes_later_deaths(ctx):
     assert res.evidence == []
 
 
-def test_cs_at_10_meets_target(ctx):
-    # Minute 10 frame has 10*8 = 80 CS; target 70 -> pass.
-    res = cs_at_10(ctx, {"minute": 10, "min_cs": 70})
-    assert res.passed is True
-    assert res.score == 1.0
-
-
-def test_cs_at_10_below_target(ctx):
-    res = cs_at_10(ctx, {"minute": 10, "min_cs": 200})
-    assert res.passed is False
-    assert 0.0 <= res.score < 1.0

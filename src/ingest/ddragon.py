@@ -4,7 +4,9 @@ Official CDN, version-pinned. Assets are cached under `assets/` (gitignored).
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -34,3 +36,17 @@ def sr_map_image() -> Path:
         resp.raise_for_status()
         path.write_bytes(resp.content)
     return path
+
+
+def item_data(locale: str = "ja_JP") -> dict[str, Any]:
+    """Item metadata keyed by item id (name, gold, into, tags, maps)."""
+    ASSETS.mkdir(exist_ok=True)
+    cache = ASSETS / f"item_{locale}.json"
+    if not cache.exists():
+        version = latest_version()
+        url = (f"https://ddragon.leagueoflegends.com/cdn/{version}"
+               f"/data/{locale}/item.json")
+        resp = httpx.get(url, timeout=30)
+        resp.raise_for_status()
+        cache.write_text(resp.text, encoding="utf-8")
+    return json.loads(cache.read_text(encoding="utf-8"))["data"]

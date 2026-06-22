@@ -2,13 +2,13 @@
 # src/rules/) to its parameters. `label` is the Japanese display name shown in
 # the app (rule ids stay English). Edit freely — tuning needs no code change.
 rules:
-  - id: cs_at_10
-    label: "CS目標（10分）"
+  - id: cs_per_minute
+    label: "CS/分（15分）"
     enabled: true
-    description: "Reach a CS target by a given minute."
+    description: "CS-per-minute target at a given minute (e.g. 7.5 at 15:00)."
     params:
-      minute: 10
-      min_cs: 70
+      minute: 15
+      min_cs_per_min: 7.5
 
   - id: deaths_before_minute
     label: "早期デス"

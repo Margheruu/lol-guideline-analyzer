@@ -10,8 +10,8 @@ Status legend: ✅ implemented · 🔜 planned (v1) · 🟡 measurable but noisy
 ## A. Laning fundamentals
 | Rule | Checks | PDF source | Signal | Status |
 |---|---|---|---|---|
-| `cs_at_minute` | CS target at a minute | matchup CS goals | participantFrames.minionsKilled | ✅ |
-| `cs_diff_vs_opponent` | CS vs same-role opponent | "win CS / stay even" | frame × opponent | 🔜 |
+| `cs_per_minute` | CS-per-minute target (e.g. 7.5 @15) | matchup CS goals | participantFrames.minionsKilled | ✅ |
+| CS vs opponent chart | per-minute CS line + 15-min diff | "win CS / stay even" | `cs_series()` × opponent | ✅ (app) |
 | `not_behind_at_minute` | not gold-behind at 15:00 | lane lead/deficit | frame totalGold × opp | ✅ |
 | `level_spike_timing` | Lv2/Lv3 timing | "Lv3 = 4th wave melee" | LEVEL_UP events | 🟡 |
 | `deaths_before_minute` | early deaths | "don't die" | CHAMPION_KILL victim | ✅ |
@@ -37,6 +37,7 @@ Status legend: ✅ implemented · 🔜 planned (v1) · 🟡 measurable but noisy
 | Rule | Checks | PDF source | Signal | Status |
 |---|---|---|---|---|
 | `boots_type_match` | defensive boot resist type | "armor boots vs AD" | damageTaken type × boots | ✅ |
+| core item timing | core-item completion vs opponent | "対面とのコアアイテム比較" | timeline ITEM_PURCHASED (all players) × ddragon | ✅ (app) |
 | `defensive_item_type_match` | armor/MR item type fit | "defensive items" | damageTaken × ddragon item tags | 🟡 |
 
 ## E. Recall (secondary signal)

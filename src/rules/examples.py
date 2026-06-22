@@ -49,24 +49,3 @@ def deaths_before_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResul
         message=f"{params['before_minute']}分までに {deaths} 回デス（上限 {max_deaths}）。",
         evidence=evidence,
     )
-
-
-@register("cs_at_10")
-def cs_at_10(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
-    """Pass if total CS at a given minute frame meets the threshold."""
-    minute = int(params.get("minute", 10))
-    min_cs = int(params["min_cs"])
-
-    frames = ctx.timeline["info"]["frames"]
-    frame = frames[min(minute, len(frames) - 1)]
-    pf = frame["participantFrames"][str(ctx.participant_id)]
-    cs = pf.get("minionsKilled", 0) + pf.get("jungleMinionsKilled", 0)
-
-    passed = cs >= min_cs
-    return RuleResult(
-        rule_id="cs_at_10",
-        passed=passed,
-        score=min(cs / min_cs, 1.0) if min_cs else 1.0,
-        message=f"{minute}分時点で {cs} CS（目標 {min_cs}）。",
-        evidence=[Evidence(detail=f"CS={cs}", timestamp_ms=minute * 60_000)],
-    )

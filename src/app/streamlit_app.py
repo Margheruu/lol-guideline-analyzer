@@ -20,6 +20,8 @@ import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from src.analysis.deaths import deaths_for  # noqa: E402
+from src.analysis.items import core_items_for  # noqa: E402
+from src.analysis.lane_series import cs_series, opponent_of  # noqa: E402
 from src.eval.runner import evaluate, load_guidelines, participant_id_for  # noqa: E402
 from src.ingest.riot_client import RiotClient  # noqa: E402
 from src.rules.base import MatchContext  # noqa: E402
@@ -100,6 +102,42 @@ def main() -> None:
         st.markdown("### キル / デス マップ")
         st.image(render_combat_map(ctx), use_container_width=True)
         st.caption("赤 ✕ = デス（○ = 最前列）、緑 = キル、金 = アシスト")
+
+    st.markdown("### レーン推移（対面とのCS比較）")
+    rows = cs_series(ctx)
+    df_cs = pd.DataFrame(rows).set_index("minute").rename(
+        columns={"self": "自分", "opponent": "対面"})
+    st.line_chart(df_cs)
+    at15 = next((r for r in rows if r["minute"] == 15), rows[-1])
+    if "opponent" in at15:
+        st.metric("15分 CS（自分 / 対面）",
+                  f"{at15['self']} / {at15['opponent']}",
+                  delta=int(at15["self"] - at15["opponent"]))
+
+    st.markdown("### コアアイテム完成時間（対面比較）")
+    opp = opponent_of(ctx, me)
+    try:
+        me_core = core_items_for(ctx, me["participantId"])
+        opp_core = core_items_for(ctx, opp["participantId"]) if opp else []
+    except Exception as exc:  # noqa: BLE001 — ddragon fetch may fail offline
+        st.caption(f"アイテム情報を取得できませんでした: {exc}")
+    else:
+        def fmt(buy):
+            return f"{buy.name}（{buy.timestamp_ms // 60000}分）" if buy else "—"
+        n = max(len(me_core), len(opp_core))
+        if n == 0:
+            st.caption("コアアイテムの完成が検出されませんでした。")
+        else:
+            item_rows = [{
+                "#": i + 1,
+                "自分": fmt(me_core[i] if i < len(me_core) else None),
+                "対面": fmt(opp_core[i] if i < len(opp_core) else None),
+            } for i in range(n)]
+            st.dataframe(pd.DataFrame(item_rows),
+                         use_container_width=True, hide_index=True)
+            if me_core and opp_core:
+                diff_min = (me_core[0].timestamp_ms - opp_core[0].timestamp_ms) // 60000
+                st.metric("1stコア完成（自分 − 対面）", f"{diff_min:+d} 分")
 
     st.markdown("### デスレポート")
     deaths = deaths_for(ctx)
