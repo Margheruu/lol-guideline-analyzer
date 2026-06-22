@@ -8,6 +8,9 @@ data/raw/*
 data/derived/*
 !data/derived/.gitkeep
 
+# Cached Data Dragon assets (downloaded on demand)
+assets/
+
 # Python
 __pycache__/
 *.py[cod]

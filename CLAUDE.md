@@ -102,6 +102,9 @@ Design notes:
   amount (`totalTimeCCDealt`) is **low-confidence** (unit unclear) — avoid.
 
 ## Visualization
+- **Rendered with Pillow, not matplotlib** — matplotlib's Agg renderer crashes
+  natively in the `ds-claude` env (STATUS_STACK_BUFFER_OVERRUN). `src/viz/
+  map_plot.py` draws on the map image with PIL and returns a PIL Image.
 - Map-based: plot kill/death positions on the Summoner's Rift map (Riot Data
   Dragon provides the map image + champion/item assets).
 - Timeline: gold/xp/CS diff vs time, with rule pass/fail markers.
