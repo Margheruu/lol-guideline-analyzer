@@ -18,6 +18,17 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 $env:RIOT_API_KEY = "RGAPI-xxxxxxxx"   # or put it in a .env file (gitignored)
 ```
 
+## Run the app
+```powershell
+streamlit run src/app/streamlit_app.py
+```
+Enter a Riot ID (e.g. `Name#TAG`), pick a recent match, and see the guideline
+verdicts, a death report, and a kill/death map.
+
+Other entry points:
+- `python scripts/smoke_fetch.py "Name#TAG" --region asia` — fetch + evaluate + death report
+- `python scripts/plot_match.py "Name#TAG" asia` — render the kill/death map to `data/derived/`
+
 ## Layout
 - `src/ingest/` — Riot API client (routing, rate-limit backoff, disk cache)
 - `src/rules/`  — one rule per guideline + registry; config-driven
