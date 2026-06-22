@@ -1,0 +1,17 @@
+# User-authored guidelines. Each entry binds a rule `id` (implemented in
+# src/rules/) to its parameters. Edit freely — tuning needs no code change.
+# Add a new rule: implement it in src/rules/, register it, then list it here.
+rules:
+  - id: cs_at_10
+    enabled: true
+    description: "Reach a CS target by a given minute."
+    params:
+      minute: 10
+      min_cs: 70
+
+  - id: deaths_before_minute
+    enabled: true
+    description: "Avoid dying too early."
+    params:
+      before_minute: 8
+      max_deaths: 1

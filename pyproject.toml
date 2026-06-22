@@ -1,0 +1,14 @@
+# Project tooling config. Conda manages the runtime env (see ../../environment.yml);
+# this file only configures dev tools (pytest, black, ruff).
+
+[tool.pytest.ini_options]
+# Put the project root on sys.path so `from src... import ...` works when you
+# run `pytest` from this folder — no PYTHONPATH needed.
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88

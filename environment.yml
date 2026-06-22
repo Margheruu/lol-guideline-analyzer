@@ -1,0 +1,72 @@
+# Conda environment for data analysis & app work with Claude Code.
+# Create:   conda env create -f environment.yml
+# Activate: conda activate ds-claude
+# Update:   conda env update -f environment.yml --prune
+# Register Jupyter kernel after activation:
+#   python -m ipykernel install --user --name ds-claude
+
+name: ds-claude
+
+channels:
+  - conda-forge
+
+dependencies:
+  # --- Core / Python ---
+  - python=3.12
+  - pip
+
+  # --- Data wrangling ---
+  - numpy
+  - pandas
+  - polars
+  - pyarrow
+  - scipy
+
+  # --- SQL / storage ---
+  - sqlalchemy
+  - duckdb
+
+  # --- API access / scraping (e.g. Riot API, stats sites) ---
+  - requests
+  - httpx
+  - tenacity   # retry / rate-limit backoff
+
+  # --- Machine learning ---
+  - scikit-learn
+  - lightgbm
+  - xgboost
+  - statsmodels
+
+  # --- Visualization ---
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # --- Notebooks ---
+  - jupyterlab
+  - ipykernel
+
+  # --- App / delivery ---
+  - streamlit
+  - fastapi
+  - uvicorn
+
+  # --- Experiment tracking ---
+  - mlflow
+
+  # --- Config / secrets ---
+  - pyyaml
+  - python-dotenv
+
+  # --- Dev tooling ---
+  - black
+  - ruff
+  - pytest
+
+  # --- Installed via pip (not on conda-forge or simpler via pip) ---
+  - pip:
+      - dash
+      # GPU PyTorch is installed SEPARATELY after env creation (RTX 3060 / CUDA).
+      # Do NOT add plain `torch` here (it pulls the CPU build from PyPI). Run:
+      #   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+      # Verify: python -c "import torch; print(torch.cuda.is_available())"  # -> True
