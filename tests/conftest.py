@@ -91,3 +91,64 @@ def make_ctx():
         )
 
     return _make
+
+
+@pytest.fixture
+def make_death_ctx():
+    """Factory for death-analysis tests.
+
+    `deaths` items: {minute, pos:(x,y), hp_pct, ally_near:bool}. Player is
+    participant 1 (team 100); ally is 2; killer is 6 (team 200).
+    """
+    HP_MAX = 1800
+
+    def _make(deaths: list[dict]):
+        n = max(d["minute"] for d in deaths) + 2
+
+        def frame(i: int) -> dict:
+            return {
+                "timestamp": i * 60_000,
+                "participantFrames": {
+                    "1": {"position": {"x": 7000, "y": 7000},
+                          "championStats": {"health": HP_MAX, "healthMax": HP_MAX}},
+                    "2": {"position": {"x": 12000, "y": 12000},
+                          "championStats": {"health": HP_MAX, "healthMax": HP_MAX}},
+                    "6": {"position": {"x": 7000, "y": 7000},
+                          "championStats": {"health": HP_MAX, "healthMax": HP_MAX}},
+                },
+                "events": [],
+            }
+
+        frames = [frame(i) for i in range(n)]
+        for d in deaths:
+            i, (x, y) = d["minute"], d["pos"]
+            f = frames[i]
+            f["participantFrames"]["1"]["position"] = {"x": x, "y": y}
+            f["participantFrames"]["1"]["championStats"]["health"] = int(d["hp_pct"] * HP_MAX)
+            f["participantFrames"]["2"]["position"] = (
+                {"x": x + 500, "y": y + 500} if d["ally_near"]
+                else {"x": x + 8000, "y": y + 8000})
+            f["events"].append({
+                "type": "CHAMPION_KILL", "victimId": 1, "killerId": 6,
+                "timestamp": i * 60_000 + 1, "position": {"x": x, "y": y},
+                "victimDamageReceived": [
+                    {"name": "Yorick", "physicalDamage": 600,
+                     "magicDamage": 0, "trueDamage": 0}],
+            })
+
+        participants = [
+            {"participantId": 1, "teamId": 100, "teamPosition": "BOTTOM",
+             "championName": "Sivir"},
+            {"participantId": 2, "teamId": 100, "teamPosition": "UTILITY",
+             "championName": "Senna"},
+            {"participantId": 6, "teamId": 200, "teamPosition": "TOP",
+             "championName": "Yorick"},
+        ]
+        return MatchContext(
+            match_id="D", puuid="p1", participant_id=1,
+            match={"metadata": {"participants": [f"p{k}" for k in range(1, 11)]},
+                   "info": {"participants": participants}},
+            timeline={"info": {"frames": frames}},
+        )
+
+    return _make

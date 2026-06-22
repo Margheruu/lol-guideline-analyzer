@@ -79,6 +79,14 @@ def main() -> None:
         for r in evaluate(ctx, guidelines):
             print(f"{'PASS' if r.passed else 'FAIL'}  {r.rule_id}: {r.message}")
 
+        from src.analysis.deaths import deaths_for  # noqa: E402
+        print("\n=== death report ===")
+        for d in deaths_for(ctx):
+            hp = f"{d.health_pct_before:.0%}" if d.health_pct_before is not None else "?"
+            print(f"  {d.timestamp_ms // 60000:>2}min @({d.position.get('x')},{d.position.get('y')}) "
+                  f"HP~{hp} killer={d.killer_champion} top={d.top_damage_source} "
+                  f"allies_near={d.allies_nearby} frontmost={d.is_frontmost}")
+
 
 if __name__ == "__main__":
     main()

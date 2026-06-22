@@ -29,3 +29,17 @@ rules:
     params:
       minute: 15
       max_gold_deficit: 500
+
+  - id: isolated_deaths
+    enabled: true
+    description: "Don't die with no teammate nearby (walking first / alone)."
+    params:
+      max_deaths: 0
+      nearby_radius: 2000
+
+  - id: low_hp_deaths
+    enabled: true
+    description: "Don't die after already being low HP (back off / recall)."
+    params:
+      health_pct: 0.35
+      max_deaths: 1
