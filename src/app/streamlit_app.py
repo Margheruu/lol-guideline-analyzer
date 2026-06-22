@@ -47,16 +47,19 @@ def fetch_match(region: str, match_id: str) -> tuple[dict, dict]:
 
 
 def main() -> None:
-    st.set_page_config(page_title="LoL Guideline Analyzer", layout="wide")
-    st.title("LoL Guideline-Adherence Analyzer")
+    # NOTE: UI display text is Japanese (the user's language); code/comments
+    # stay English. See CLAUDE.md.
+    st.set_page_config(page_title="LoL ガイドライン分析", layout="wide")
+    st.title("LoL ガイドライン適合度アナライザー")
 
     with st.sidebar:
-        region = st.selectbox("Routing region", ["asia", "americas", "europe"])
-        riot_id = st.text_input("Riot ID (gameName#tagLine)", "Bammmoo#ztmy")
-        count = st.slider("Matches to list", 1, 20, 5)
+        region = st.selectbox("リージョン（ルーティング）",
+                              ["asia", "americas", "europe"])
+        riot_id = st.text_input("Riot ID（ゲーム名#タグ）", "Bammmoo#ztmy")
+        count = st.slider("表示する試合数", 1, 20, 5)
 
     if "#" not in riot_id:
-        st.info("Enter a Riot ID like `Name#TAG` in the sidebar.")
+        st.info("サイドバーに Riot ID（例: 名前#TAG）を入力してください。")
         return
 
     game_name, tag_line = riot_id.split("#", 1)
@@ -64,52 +67,52 @@ def main() -> None:
         puuid = fetch_puuid(region, game_name, tag_line)
         match_ids = fetch_match_ids(region, puuid, count)
     except Exception as exc:  # noqa: BLE001 — surface API errors to the user
-        st.error(f"Riot API request failed: {exc}")
+        st.error(f"Riot API リクエストに失敗しました: {exc}")
         return
 
     if not match_ids:
-        st.warning("No matches found for this Riot ID.")
+        st.warning("この Riot ID の試合が見つかりませんでした。")
         return
 
-    match_id = st.selectbox("Match", match_ids)
+    match_id = st.selectbox("試合", match_ids)
     match, timeline = fetch_match(region, match_id)
     ctx = MatchContext(match_id, puuid,
                        participant_id_for(match, puuid), match, timeline)
     me = match["info"]["participants"][ctx.participant_id - 1]
 
     kda = f"{me.get('kills')}/{me.get('deaths')}/{me.get('assists')}"
-    outcome = "WIN" if me.get("win") else "LOSS"
+    outcome = "勝利" if me.get("win") else "敗北"
     st.subheader(f"{me.get('championName')} · {me.get('teamPosition')} · "
                  f"KDA {kda} · {outcome}")
 
     left, right = st.columns(2)
     with left:
-        st.markdown("### Guideline evaluation")
+        st.markdown("### ガイドライン判定")
         for r in evaluate(ctx, load_guidelines(GUIDELINES)):
             st.markdown(f"{'✅' if r.passed else '❌'} **{r.rule_id}** — {r.message}")
             for ev in r.evidence[:5]:
-                when = f" @ {ev.timestamp_ms // 60000}'" if ev.timestamp_ms else ""
+                when = f" @ {ev.timestamp_ms // 60000}分" if ev.timestamp_ms else ""
                 st.caption(f"• {ev.detail}{when}")
     with right:
-        st.markdown("### Kill / death map")
+        st.markdown("### キル / デス マップ")
         st.image(render_combat_map(ctx), use_container_width=True)
-        st.caption("red ✕ = death (○ = most-forward), green = kill, gold = assist")
+        st.caption("赤 ✕ = デス（○ = 最前列）、緑 = キル、金 = アシスト")
 
-    st.markdown("### Death report")
+    st.markdown("### デスレポート")
     deaths = deaths_for(ctx)
     if not deaths:
-        st.success("No deaths this game. 🎉")
+        st.success("この試合はデスなし 🎉")
         return
     df = pd.DataFrame([{
-        "min": d.timestamp_ms // 60000,
+        "分": d.timestamp_ms // 60000,
         "x": d.position.get("x"),
         "y": d.position.get("y"),
-        "HP% before": None if d.health_pct_before is None
+        "直前HP%": None if d.health_pct_before is None
         else round(d.health_pct_before * 100),
-        "killer": d.killer_champion,
-        "top damage": d.top_damage_source,
-        "allies near": d.allies_nearby,
-        "frontmost": d.is_frontmost,
+        "加害者": d.killer_champion,
+        "主因ダメージ": d.top_damage_source,
+        "周囲の味方数": d.allies_nearby,
+        "最前列": d.is_frontmost,
     } for d in deaths])
     st.dataframe(df, use_container_width=True, hide_index=True)
 
