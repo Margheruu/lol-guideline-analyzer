@@ -18,7 +18,7 @@ def test_wrong_mr_boots_vs_physical(make_ctx):
     ctx = make_ctx(phys=7000, magic=2000, true=1000, boot_ids=(MERCS,))
     res = boots_type_match(ctx, {"threshold": 0.6})
     assert res.passed is False
-    assert "mismatch" in res.message
+    assert "不一致" in res.message
 
 
 def test_offensive_boots_not_evaluated(make_ctx):
@@ -26,14 +26,14 @@ def test_offensive_boots_not_evaluated(make_ctx):
     ctx = make_ctx(boot_ids=(BERSERKERS,))
     res = boots_type_match(ctx, {})
     assert res.passed is True
-    assert "not evaluated" in res.message.lower()
+    assert "評価対象外" in res.message
 
 
 def test_no_boots_not_evaluated(make_ctx):
     ctx = make_ctx(boot_ids=())
     res = boots_type_match(ctx, {})
     assert res.passed is True
-    assert "not evaluated" in res.message.lower()
+    assert "評価対象外" in res.message
 
 
 def test_balanced_damage_passes(make_ctx):

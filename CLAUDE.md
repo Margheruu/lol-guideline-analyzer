@@ -4,10 +4,10 @@ Global rules in `~/.claude/CLAUDE.md` also apply (Japanese conversation,
 English files, ask before acting, senior-DS persona). This file adds
 project-specific specs. Keep it updated as the project evolves.
 
-**App UI language**: the Streamlit app's *display text* is **Japanese** (the
-user's language). Code, comments, identifiers, file names, commits, and rule
-`message` strings stay **English**. (Localizing rule messages is a possible
-follow-up.)
+**App UI language**: all *user-facing text* is **Japanese** (the user's
+language) — Streamlit labels, rule verdict `message` strings, and the Japanese
+display name per rule via `label:` in `guidelines.yaml`. Code, comments,
+identifiers (incl. rule `id`s), file names, and commits stay **English**.
 
 ## Goal
 Evaluate whether a player followed their **own predefined guidelines** in

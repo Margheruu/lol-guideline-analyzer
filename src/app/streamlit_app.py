@@ -88,8 +88,11 @@ def main() -> None:
     left, right = st.columns(2)
     with left:
         st.markdown("### ガイドライン判定")
-        for r in evaluate(ctx, load_guidelines(GUIDELINES)):
-            st.markdown(f"{'✅' if r.passed else '❌'} **{r.rule_id}** — {r.message}")
+        guidelines = load_guidelines(GUIDELINES)
+        labels = {g["id"]: g.get("label", g["id"]) for g in guidelines}
+        for r in evaluate(ctx, guidelines):
+            name = labels.get(r.rule_id, r.rule_id)
+            st.markdown(f"{'✅' if r.passed else '❌'} **{name}** — {r.message}")
             for ev in r.evidence[:5]:
                 when = f" @ {ev.timestamp_ms // 60000}分" if ev.timestamp_ms else ""
                 st.caption(f"• {ev.detail}{when}")

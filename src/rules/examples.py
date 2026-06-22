@@ -46,10 +46,7 @@ def deaths_before_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResul
         rule_id="deaths_before_minute",
         passed=passed,
         score=1.0 if passed else 0.0,
-        message=(
-            f"{deaths} death(s) before {params['before_minute']}:00 "
-            f"(limit {max_deaths})."
-        ),
+        message=f"{params['before_minute']}分までに {deaths} 回デス（上限 {max_deaths}）。",
         evidence=evidence,
     )
 
@@ -70,6 +67,6 @@ def cs_at_10(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
         rule_id="cs_at_10",
         passed=passed,
         score=min(cs / min_cs, 1.0) if min_cs else 1.0,
-        message=f"{cs} CS at {minute}:00 (target {min_cs}).",
-        evidence=[Evidence(detail=f"cs={cs}", timestamp_ms=minute * 60_000)],
+        message=f"{minute}分時点で {cs} CS（目標 {min_cs}）。",
+        evidence=[Evidence(detail=f"CS={cs}", timestamp_ms=minute * 60_000)],
     )

@@ -35,7 +35,7 @@ def not_behind_at_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResul
     opp = _opponent(ctx, me)
     if opp is None:
         return RuleResult("not_behind_at_minute", True, 1.0,
-                          "No same-role opponent found; not evaluated.", [])
+                          "同ロールの相手が見つからず評価対象外。", [])
 
     frames = ctx.timeline["info"]["frames"]
     frame = frames[min(minute, len(frames) - 1)]
@@ -48,7 +48,7 @@ def not_behind_at_minute(ctx: MatchContext, params: dict[str, Any]) -> RuleResul
 
     passed = gold_d >= -max_gold_deficit
     score = 1.0 if passed else max(0.0, 1.0 + gold_d / 2000.0)
-    msg = (f"@{minute}:00 vs {opp.get('championName', 'opponent')}: "
-           f"CS {cs_d:+d}, gold {gold_d:+d}, level {lvl_d:+d}.")
+    msg = (f"{minute}分 vs {opp.get('championName', '相手')}: "
+           f"CS {cs_d:+d} / ゴールド {gold_d:+d} / レベル {lvl_d:+d}。")
     return RuleResult("not_behind_at_minute", passed, score, msg,
                       [Evidence(detail=msg, timestamp_ms=minute * 60_000)])

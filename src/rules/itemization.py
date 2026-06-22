@@ -42,10 +42,10 @@ def boots_type_match(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     total = pt + mt + truet
     if total == 0:
         return RuleResult("boots_type_match", True, 1.0,
-                          "No damage taken; not evaluated.", [])
+                          "被ダメージなし。評価対象外。", [])
 
     phys, magic = pt / total, mt / total
-    profile = f"damage taken {phys:.0%} phys / {magic:.0%} magic"
+    profile = f"被ダメージ 物理{phys:.0%} / 魔法{magic:.0%}"
     suggest = _LABEL["armor"] if phys >= magic else _LABEL["mr"]
 
     built = [DEFENSIVE_BOOTS[i] for i in _purchased_item_ids(ctx)
@@ -53,8 +53,7 @@ def boots_type_match(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     if not built:
         return RuleResult(
             "boots_type_match", True, 1.0,
-            f"No defensive boots built; not evaluated ({profile}). "
-            f"If going defensive: {suggest}.",
+            f"防御靴なし。評価対象外（{profile}）。防御靴を積むなら: {suggest}。",
             [Evidence(detail=profile)],
         )
 
@@ -62,12 +61,12 @@ def boots_type_match(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     expected = "armor" if phys >= threshold else ("mr" if magic >= threshold else None)
     if expected is None:
         return RuleResult("boots_type_match", True, 1.0,
-                          f"Damage is balanced ({profile}); either resist boot is fine.",
+                          f"ダメージは均衡（{profile}）。どちらの耐性靴でも可。",
                           [Evidence(detail=profile)])
 
     passed = built_type == expected
-    msg = (f"Built {_LABEL[built_type]} vs {profile} — "
-           + ("correct resist type."
-              if passed else f"mismatch: expected {_LABEL[expected]}."))
+    msg = (f"{_LABEL[built_type]} を装備（{profile}）— "
+           + ("耐性型は適切。"
+              if passed else f"不一致: 推奨は {_LABEL[expected]}。"))
     return RuleResult("boots_type_match", passed, 1.0 if passed else 0.0, msg,
                       [Evidence(detail=profile)])

@@ -18,14 +18,14 @@ def isolated_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     isolated = [d for d in deaths if d.allies_nearby == 0]
     passed = len(isolated) <= max_allowed
     evidence = [
-        Evidence(detail=f"died with no ally within {radius} (killer {d.killer_champion})",
+        Evidence(detail=f"周囲{radius}内に味方なしでデス（加害者 {d.killer_champion}）",
                  timestamp_ms=d.timestamp_ms, position=d.position)
         for d in isolated
     ]
     return RuleResult(
         "isolated_deaths", passed, 1.0 if passed else 0.0,
-        f"{len(isolated)} of {len(deaths)} deaths had no ally nearby "
-        f"(limit {max_allowed}).",
+        f"{len(deaths)} 回中 {len(isolated)} 回、周囲に味方なしでデス"
+        f"（上限 {max_allowed}）。",
         evidence,
     )
 
@@ -40,13 +40,13 @@ def low_hp_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
            if d.health_pct_before is not None and d.health_pct_before <= pct]
     passed = len(low) <= max_allowed
     evidence = [
-        Evidence(detail=f"~{d.health_pct_before:.0%} HP before death",
+        Evidence(detail=f"デス直前 HP ~{d.health_pct_before:.0%}",
                  timestamp_ms=d.timestamp_ms, position=d.position)
         for d in low
     ]
     return RuleResult(
         "low_hp_deaths", passed, 1.0 if passed else 0.0,
-        f"{len(low)} of {len(deaths)} deaths after already being "
-        f"<= {pct:.0%} HP (limit {max_allowed}).",
+        f"{len(deaths)} 回中 {len(low)} 回、HP {pct:.0%} 以下からのデス"
+        f"（上限 {max_allowed}）。",
         evidence,
     )

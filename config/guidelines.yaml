@@ -1,8 +1,9 @@
 # User-authored guidelines. Each entry binds a rule `id` (implemented in
-# src/rules/) to its parameters. Edit freely — tuning needs no code change.
-# Add a new rule: implement it in src/rules/, register it, then list it here.
+# src/rules/) to its parameters. `label` is the Japanese display name shown in
+# the app (rule ids stay English). Edit freely — tuning needs no code change.
 rules:
   - id: cs_at_10
+    label: "CS目標（10分）"
     enabled: true
     description: "Reach a CS target by a given minute."
     params:
@@ -10,6 +11,7 @@ rules:
       min_cs: 70
 
   - id: deaths_before_minute
+    label: "早期デス"
     enabled: true
     description: "Avoid dying too early."
     params:
@@ -17,6 +19,7 @@ rules:
       max_deaths: 1
 
   - id: boots_type_match
+    label: "防御靴の型"
     enabled: true
     description: "If you built defensive boots, are they the right resist type
       for the damage you took? (Offensive/no boots are not evaluated.)"
@@ -24,6 +27,7 @@ rules:
       threshold: 0.6
 
   - id: not_behind_at_minute
+    label: "15分レーン差"
     enabled: true
     description: "Not significantly behind your lane opponent (gold) at 15:00."
     params:
@@ -31,6 +35,7 @@ rules:
       max_gold_deficit: 500
 
   - id: isolated_deaths
+    label: "孤立デス"
     enabled: true
     description: "Don't die with no teammate nearby (walking first / alone)."
     params:
@@ -38,6 +43,7 @@ rules:
       nearby_radius: 2000
 
   - id: low_hp_deaths
+    label: "低HPデス"
     enabled: true
     description: "Don't die after already being low HP (back off / recall)."
     params:
