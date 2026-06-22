@@ -6,9 +6,9 @@ from typing import Any
 
 import yaml
 
-# Importing examples registers the bundled rules. Add your own rule modules
-# here (or use a plugin-style import) so their @register decorators run.
-from src.rules import examples  # noqa: F401  (import for side effects)
+# Importing the rules package registers all bundled rule modules (their
+# @register decorators run on import).
+import src.rules  # noqa: F401  (import for side effects)
 from src.rules import registry
 from src.rules.base import MatchContext, RuleResult
 

@@ -15,3 +15,17 @@ rules:
     params:
       before_minute: 8
       max_deaths: 1
+
+  - id: boots_type_match
+    enabled: true
+    description: "If you built defensive boots, are they the right resist type
+      for the damage you took? (Offensive/no boots are not evaluated.)"
+    params:
+      threshold: 0.6
+
+  - id: not_behind_at_minute
+    enabled: true
+    description: "Not significantly behind your lane opponent (gold) at 15:00."
+    params:
+      minute: 15
+      max_gold_deficit: 500

@@ -15,12 +15,16 @@ from pathlib import Path
 from typing import Any, Callable
 
 import httpx
+from dotenv import load_dotenv
 from tenacity import (
     retry,
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
+
+# Load RIOT_API_KEY from a local .env if present (gitignored). Never commit it.
+load_dotenv()
 
 # Regional routing host for account-v1 / match-v5.
 REGIONAL = {"asia", "americas", "europe"}

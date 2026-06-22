@@ -42,18 +42,26 @@ Rate limits (dev key, typical): ~20 req/s and ~100 req/2min. Respect
 refetching (timeline is immutable per match).
 
 ### What the timeline provides (v1-usable)
+Verified against real data (match JP1_589071001, 26 frames @ 60s interval).
 - `participantFrames` every 60s: `position{x,y}`, `currentGold`/`totalGold`,
-  `level`, `xp`, `minionsKilled`, `jungleMinionsKilled`, `championStats`
-  (health/healthMax/power/etc. — **sampled at the frame, not continuous**),
-  `damageStats`.
-- `events` with timestamps: `CHAMPION_KILL` (**with position x,y**, killer/
-  victim/assist), `ITEM_PURCHASED`/`SOLD`/`DESTROYED`, `WARD_PLACED`/`KILL`,
-  `SKILL_LEVEL_UP`, `LEVEL_UP`, `BUILDING_KILL`, `ELITE_MONSTER_KILL`, ...
+  `goldPerSecond`, `level`, `xp`, `minionsKilled`, `jungleMinionsKilled`,
+  `timeEnemySpentControlled`, `damageStats`, and `championStats` — which DOES
+  include `health`/`healthMax` and `power`/`powerMax` (mana), plus armor, AD,
+  AP, etc. So health/mana ARE available, but **sampled per 60s frame**.
+- `events` with timestamps: `CHAMPION_KILL`, `CHAMPION_SPECIAL_KILL`,
+  `ITEM_PURCHASED`/`SOLD`/`DESTROYED`/`UNDO`, `WARD_PLACED`/`WARD_KILL`,
+  `SKILL_LEVEL_UP`, `LEVEL_UP`, `BUILDING_KILL`, `TURRET_PLATE_DESTROYED`,
+  `ELITE_MONSTER_KILL`, `DRAGON_SOUL_GIVEN`, `OBJECTIVE_BOUNTY_*`.
+- `CHAMPION_KILL` is rich: `position{x,y}`, `killerId`/`victimId`, `bounty`,
+  `killStreakLength`, and `victimDamageDealt`/`victimDamageReceived` arrays
+  giving the per-spell damage breakdown (incl. summoner spells like
+  `summonerdot` = Ignite) around the kill.
 
 ### Not available from the API (do NOT promise in v1)
-- Continuous (second-level) health/mana between frames.
-- Summoner-spell cast timing / cooldown usage.
-- Ability cast timing, exact movement between frames.
+- Continuous (sub-minute) health/mana — only the 60s frame samples exist.
+- A complete summoner-spell cast/cooldown log. (Usage in a fight is partially
+  inferable from the `CHAMPION_KILL` damage arrays, but not a full history.)
+- A clean ability-cast event stream; exact movement between 60s frames.
 
 ## Guideline Evaluation Model
 Treat each guideline as a **measurable rule** over timeline data; output a
@@ -76,6 +84,22 @@ Design notes:
   the user can edit their own guidelines without code changes.
 - Be explicit about uncertainty from 60s sampling (e.g. gold/health are
   frame-sampled, so timing-based rules have ~1-min resolution).
+
+### v1 guideline decisions (from the user's ADC guidelines)
+- **Champion-specific** guidelines (e.g. Caitlyn/Kai'Sa combos, builds) are
+  **out of scope for v1** — only role-general, measurable rules.
+- **Recall**: primarily wave-state driven (theory). Secondary bonus signal:
+  recall is well-timed when **enemy JG is bot-side AND ally JG is top-side**.
+- **Boots / defensive items**: theory-based (match enemy damage type). Going
+  defensive is for when the player can't keep trading in skirmishes/fights —
+  that judgment is hard to measure, so v1 only checks **boot-type correctness
+  when a defensive boot was built** and reports the damage profile as info.
+- **Jungle-invade cover**: follow theory — ADC generally does NOT abandon
+  lane for early jungle skirmishes (low reward, high risk).
+- **Snowball** = lane lead **plus** objective-fight participation.
+- Measurable damage-type signal: prefer the player's **actual damage taken**
+  split (physical/magic) over guessing from enemy champion identity. Enemy CC
+  amount (`totalTimeCCDealt`) is **low-confidence** (unit unclear) — avoid.
 
 ## Visualization
 - Map-based: plot kill/death positions on the Summoner's Rift map (Riot Data
