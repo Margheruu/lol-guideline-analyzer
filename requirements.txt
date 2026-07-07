@@ -1,0 +1,4 @@
+# Used by Streamlit Community Cloud (it installs requirements.txt at the repo
+# root). Kept as a pointer so the single source of truth stays in
+# requirements-app.txt.
+-r requirements-app.txt

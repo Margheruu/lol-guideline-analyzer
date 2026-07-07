@@ -6,15 +6,25 @@ of Legends matches, surface where they deviated, and visualize it.
 See `CLAUDE.md` for the full spec, data sources, and roadmap.
 
 ## Setup
+
+**Option A — full conda env** (notebooks, ML experimentation):
 ```powershell
-# 1. Create & activate the conda env
 conda env create -f environment.yml
 conda activate ds-claude
 
-# 2. (Optional, later) GPU PyTorch for Phase 3 video work
+# (Optional, later) GPU PyTorch for Phase 3 video work
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+```
 
-# 3. Set your Riot API key (get a dev key at developer.riotgames.com)
+**Option B — lightweight venv** (just running the app on a new device):
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements-app.txt
+```
+
+Then, either way, set your Riot API key (get a dev key at developer.riotgames.com):
+```powershell
 $env:RIOT_API_KEY = "RGAPI-xxxxxxxx"   # or put it in a .env file (gitignored)
 ```
 

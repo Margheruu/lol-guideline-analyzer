@@ -1,0 +1,21 @@
+# Minimal deps to run the Streamlit app + evaluate guidelines, without the
+# full ds-claude conda env (Jupyter, xgboost, mlflow, etc. not needed here).
+#
+# Setup on a new device:
+#   python -m venv .venv
+#   .venv\Scripts\activate        (PowerShell: .venv\Scripts\Activate.ps1)
+#   pip install -r requirements-app.txt
+#   $env:RIOT_API_KEY = "RGAPI-xxxxxxxx"   # or put it in a .env file
+#   streamlit run src/app/streamlit_app.py
+#
+# For notebook/ML work, use the full conda env instead (environment.yml).
+
+streamlit
+pandas
+requests
+httpx
+tenacity
+pyyaml
+python-dotenv
+pillow
+pytest
