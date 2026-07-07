@@ -1,4 +1,4 @@
-# Project tooling config. Conda manages the runtime env (see ../../environment.yml);
+# Project tooling config. Conda manages the runtime env (see ../../conda-environment.yml);
 # this file only configures dev tools (pytest, black, ruff).
 
 [tool.pytest.ini_options]

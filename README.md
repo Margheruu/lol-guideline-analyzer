@@ -9,7 +9,7 @@ See `CLAUDE.md` for the full spec, data sources, and roadmap.
 
 **Option A — full conda env** (notebooks, ML experimentation):
 ```powershell
-conda env create -f environment.yml
+conda env create -f conda-environment.yml
 conda activate ds-claude
 
 # (Optional, later) GPU PyTorch for Phase 3 video work
@@ -22,6 +22,13 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements-app.txt
 ```
+
+**Option C — Streamlit Community Cloud**: deploy straight from this GitHub repo
+(main file `src/app/streamlit_app.py`); it installs from the root
+`requirements.txt`. Set `RIOT_API_KEY` in the app's Secrets, or paste a key
+into the sidebar at runtime. Note: `conda-environment.yml` is intentionally
+*not* named `environment.yml` — Cloud auto-detects that exact filename and
+would try to solve the full conda env instead, which hangs on the free tier.
 
 Then, either way, set your Riot API key (get a dev key at developer.riotgames.com):
 ```powershell

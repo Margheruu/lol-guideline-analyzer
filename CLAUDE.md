@@ -143,5 +143,7 @@ tests/         # unit tests for rules (fixtures from sample timelines)
 - Secrets: `RIOT_API_KEY` via env; add `.env` and `data/` to `.gitignore`.
 - Validation: build rules with **unit tests** on saved sample timelines so
   evaluation logic is reproducible and regression-safe.
-- Env: conda env `ds-claude` (see `environment.yml`); `conda activate` it
+- Env: conda env `ds-claude` (see `conda-environment.yml`; deliberately not
+  named `environment.yml` — see Streamlit Cloud note in README); `conda
+  activate` it
   before running anything.

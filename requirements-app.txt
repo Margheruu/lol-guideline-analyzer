@@ -8,7 +8,7 @@
 #   $env:RIOT_API_KEY = "RGAPI-xxxxxxxx"   # or put it in a .env file
 #   streamlit run src/app/streamlit_app.py
 #
-# For notebook/ML work, use the full conda env instead (environment.yml).
+# For notebook/ML work, use the full conda env instead (conda-environment.yml).
 
 streamlit
 pandas

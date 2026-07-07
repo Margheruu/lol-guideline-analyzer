@@ -1,7 +1,14 @@
 # Conda environment for data analysis & app work with Claude Code.
-# Create:   conda env create -f environment.yml
+#
+# NOTE: named conda-environment.yml (not environment.yml) on purpose --
+# Streamlit Community Cloud auto-detects a repo-root `environment.yml` and
+# uses conda to solve this entire (heavy) dependency set instead of the
+# lightweight requirements.txt, which made Cloud builds hang on "Solving
+# environment". Keep this name so Cloud deploys stay on the pip path.
+#
+# Create:   conda env create -f conda-environment.yml
 # Activate: conda activate ds-claude
-# Update:   conda env update -f environment.yml --prune
+# Update:   conda env update -f conda-environment.yml --prune
 # Register Jupyter kernel after activation:
 #   python -m ipykernel install --user --name ds-claude
 
