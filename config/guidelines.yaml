@@ -29,23 +29,72 @@ rules:
   - id: not_behind_at_minute
     label: "15分レーン差"
     enabled: true
-    description: "Not significantly behind your lane opponent (gold) at 15:00."
+    description: "Not significantly behind your lane opponent at 15:00 — gold,
+      plus CS and level deficits."
     params:
       minute: 15
       max_gold_deficit: 500
+      max_cs_deficit: 10
+      max_level_deficit: 1
 
   - id: isolated_deaths
     label: "孤立デス"
     enabled: true
-    description: "Don't die with no teammate nearby (walking first / alone)."
+    description: "Don't die with no teammate nearby (walking first / alone).
+      Tuned against 43 real matches (2026-07): a strict 0-tolerance /
+      2000-radius setting flagged 37.6% of all deaths, so max_deaths was
+      relaxed to 1 and the radius widened to 2500."
     params:
-      max_deaths: 0
-      nearby_radius: 2000
+      max_deaths: 1
+      nearby_radius: 2500
 
   - id: low_hp_deaths
     label: "低HPデス"
     enabled: true
-    description: "Don't die after already being low HP (back off / recall)."
+    description: "Don't die after already being low HP (back off / recall).
+      Validated against 43 real matches (2026-07): only 12.4% of deaths hit
+      this threshold, consistent with most deaths being full-HP burst/dive
+      deaths rather than lingering-at-low-HP deaths — current values kept."
     params:
       health_pct: 0.35
       max_deaths: 1
+
+  - id: frontmost_deaths
+    label: "最前線デス"
+    enabled: false  # see caveat below before enabling
+    description: "Flag deaths where you were the most-forward teammate
+      (engaged/dove first). Caveat: only evaluated when >=1 ally was within
+      nearby_radius — a fully isolated death can't be classified as
+      'frontmost of the group', so this under-counts the riskiest deaths.
+      Disabled by default; enable once you've reviewed a few matches'
+      evidence and are comfortable with that blind spot."
+    params:
+      max_deaths: 1
+      nearby_radius: 2000
+
+  - id: death_cause_summary
+    label: "デス要因サマリー"
+    enabled: true
+    description: "Informational only (always passes): breakdown of deaths by
+      killer champion and top damage source, to support 'analyze your
+      deaths'."
+    params: {}
+
+  - id: kill_participation
+    label: "キル関与率"
+    enabled: true
+    description: "(Kills + assists) / team kills meets a target rate. Uses
+      Riot's own challenges.killParticipation stat."
+    params:
+      min_participation: 0.5
+
+  - id: wards_per_interval
+    label: "視界確保ペース"
+    enabled: true
+    description: "Wards placed keep pace across fixed intervals through the
+      laning phase. Default target is a starting point — tune to your own
+      warding habits after reviewing a few matches."
+    params:
+      interval_minutes: 3
+      min_wards_per_interval: 1
+      through_minute: 15
