@@ -8,6 +8,7 @@ viz layers — all of which are unit-tested / verified on real data.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -25,9 +26,24 @@ from src.analysis.lane_series import cs_series, opponent_of  # noqa: E402
 from src.eval.runner import evaluate, load_guidelines, participant_id_for  # noqa: E402
 from src.ingest.riot_client import RiotClient  # noqa: E402
 from src.rules.base import MatchContext  # noqa: E402
+from src.rules.metadata import DATA_NOTES  # noqa: E402
 from src.viz.map_plot import render_combat_map  # noqa: E402
 
 GUIDELINES = ROOT / "config" / "guidelines.yaml"
+
+
+def _bridge_secrets_to_env() -> None:
+    """On Streamlit Community Cloud the API key lives in st.secrets, not the
+    environment. Copy it over so RiotClient (env-based) works unchanged.
+    Local runs without a secrets.toml must not crash — hence the try/except.
+    """
+    if os.environ.get("RIOT_API_KEY"):
+        return
+    try:
+        if "RIOT_API_KEY" in st.secrets:
+            os.environ["RIOT_API_KEY"] = st.secrets["RIOT_API_KEY"]
+    except FileNotFoundError:
+        pass
 
 
 @st.cache_data(show_spinner=False)
@@ -53,12 +69,27 @@ def main() -> None:
     # stay English. See CLAUDE.md.
     st.set_page_config(page_title="LoL ガイドライン分析", layout="wide")
     st.title("LoL ガイドライン適合度アナライザー")
+    _bridge_secrets_to_env()
 
     with st.sidebar:
         region = st.selectbox("リージョン（ルーティング）",
                               ["asia", "americas", "europe"])
         riot_id = st.text_input("Riot ID（ゲーム名#タグ）", "Bammmoo#ztmy")
         count = st.slider("表示する試合数", 1, 20, 5)
+        # Manual key entry (e.g. from a phone): takes priority over secrets /
+        # .env. Dev keys expire after 24h, so this is the quickest way to
+        # swap in a fresh one without touching server config.
+        key_input = st.text_input(
+            "Riot API キー（任意・設定済みなら不要）", type="password",
+            help="developer.riotgames.com の開発キーは24時間で失効します。"
+                 "失効時はここに新しいキーを貼り付けてください。")
+    if key_input:
+        os.environ["RIOT_API_KEY"] = key_input
+
+    if not os.environ.get("RIOT_API_KEY"):
+        st.warning("Riot API キーが設定されていません。サイドバーの入力欄に"
+                   "キーを貼り付けるか、.env / Streamlit secrets で設定してください。")
+        return
 
     if "#" not in riot_id:
         st.info("サイドバーに Riot ID（例: 名前#TAG）を入力してください。")
@@ -95,6 +126,9 @@ def main() -> None:
         for r in evaluate(ctx, guidelines):
             name = labels.get(r.rule_id, r.rule_id)
             st.markdown(f"{'✅' if r.passed else '❌'} **{name}** — {r.message}")
+            note = DATA_NOTES.get(r.rule_id)
+            if note:
+                st.caption(f"※ {note}")
             for ev in r.evidence[:5]:
                 when = f" @ {ev.timestamp_ms // 60000}分" if ev.timestamp_ms else ""
                 st.caption(f"• {ev.detail}{when}")
