@@ -56,6 +56,21 @@ read it first; this file is the task-oriented "how do I..." guide.
   verdicts, death report, kill/death map).
 - Activate the `ds-claude` conda env before running any of the above.
 
+### Update the shared Riot API key (daily — dev keys expire after 24h)
+1. developer.riotgames.com → "Regenerate API Key" → copy the new key.
+2. `conda activate ds-claude`, then `python scripts/update_api_key.py` and
+   paste the key when prompted. This rewrites the local `.env` and copies a
+   ready-to-paste `RIOT_API_KEY = "..."` TOML line to the clipboard.
+3. Paste that into the deployed app's Secrets (share.streamlit.io → the app
+   → ⋮ → Settings → Secrets) → Save → **Reboot app**. This is the
+   persistent source of truth for every visitor — always do this step.
+
+Quick alternative when you're away from this repo (e.g. on a phone): open
+the app → sidebar → "🔧 管理者用" → enter `ADMIN_PASSWORD` → paste the new
+key. Applies instantly, no reboot needed — but it only patches the *running*
+process, so it does **not** survive the next restart (Cloud sleep/wake,
+redeploy, maintenance). Still do step 3 above once you're back at a PC.
+
 ### Debugging a rule verdict
 - Rules only see 60s-sampled frames + discrete events — resist adding
   sub-minute precision claims; if a verdict looks wrong, check whether it's

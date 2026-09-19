@@ -1,7 +1,7 @@
 """Propagate a freshly-regenerated RIOT_API_KEY to every place it's needed.
 
 Usage:
-    python scripts/update_api_key.py                 # prompts (hidden input)
+    python scripts/update_api_key.py                 # prompts (visible input)
     python scripts/update_api_key.py RGAPI-xxxx...    # or pass it directly
 
 Does NOT touch developer.riotgames.com — you still regenerate the key
@@ -13,13 +13,15 @@ Settings -> Secrets and reboot.
 """
 from __future__ import annotations
 
-import getpass
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT / ".env"
+KEY_PATTERN = re.compile(
+    r"^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
 
 def update_env_file(key: str) -> None:
@@ -42,10 +44,19 @@ def copy_to_clipboard(text: str) -> bool:
 
 
 def main() -> None:
-    key = sys.argv[1] if len(sys.argv) > 1 else getpass.getpass("New RIOT_API_KEY: ")
+    # Visible input on purpose: a hidden prompt (getpass) gives no feedback on
+    # whether a paste actually landed, which on terminals where Ctrl+V doesn't
+    # paste (e.g. Anaconda Prompt / cmd.exe, which wants right-click instead)
+    # leads to repeated paste attempts silently concatenating into one string.
+    key = sys.argv[1] if len(sys.argv) > 1 else input("New RIOT_API_KEY: ")
     key = key.strip()
     if not key:
         print("No key entered, aborting.")
+        return
+    if not KEY_PATTERN.match(key):
+        print(f"This doesn't look like a Riot API key: {key!r}")
+        print("(expected RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx - "
+              "on cmd.exe/Anaconda Prompt, paste with right-click, not Ctrl+V)")
         return
 
     update_env_file(key)
