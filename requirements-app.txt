@@ -11,6 +11,7 @@
 # For notebook/ML work, use the full conda env instead (conda-environment.yml).
 
 streamlit
+streamlit-local-storage
 pandas
 requests
 httpx

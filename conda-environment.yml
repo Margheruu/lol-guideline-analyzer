@@ -73,6 +73,7 @@ dependencies:
   # --- Installed via pip (not on conda-forge or simpler via pip) ---
   - pip:
       - dash
+      - streamlit-local-storage
       # GPU PyTorch is installed SEPARATELY after env creation (RTX 3060 / CUDA).
       # Do NOT add plain `torch` here (it pulls the CPU build from PyPI). Run:
       #   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124

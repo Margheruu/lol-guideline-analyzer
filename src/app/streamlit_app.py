@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
+from streamlit_local_storage import LocalStorage  # noqa: E402
 
 from src.analysis.deaths import deaths_for  # noqa: E402
 from src.analysis.items import core_items_for  # noqa: E402
@@ -71,10 +72,19 @@ def main() -> None:
     st.title("LoL ガイドライン適合度アナライザー")
     _bridge_secrets_to_env()
 
+    # Remembers the visitor's own Riot ID in their browser (localStorage) so
+    # they don't have to retype it on every visit. Stored client-side only —
+    # never sent anywhere but back to this same page.
+    local_storage = LocalStorage()
+    saved_riot_id = local_storage.getItem("riot_id") or ""
+
     with st.sidebar:
         region = st.selectbox("リージョン（ルーティング）",
                               ["asia", "americas", "europe"])
-        riot_id = st.text_input("Riot ID（ゲーム名#タグ）", "Bammmoo#ztmy")
+        riot_id = st.text_input("Riot ID（ゲーム名#タグ）", saved_riot_id,
+                                 placeholder="Name#TAG")
+        if riot_id and riot_id != saved_riot_id:
+            local_storage.setItem("riot_id", riot_id)
         count = st.slider("表示する試合数", 1, 20, 5)
         # Manual key entry (e.g. from a phone): takes priority over secrets /
         # .env. Dev keys expire after 24h, so this is the quickest way to
