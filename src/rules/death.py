@@ -11,11 +11,19 @@ from .registry import register
 
 
 @register("isolated_deaths")
-def isolated_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
-    """Flag deaths with no teammate nearby ("don't walk first / when alone")."""
+def isolated_deaths(
+    ctx: MatchContext, params: dict[str, Any],
+    champion_meta: dict[str, Any] | None = None,
+) -> RuleResult:
+    """Flag deaths with no teammate nearby ("don't walk first / when alone").
+
+    ``champion_meta`` overrides the Data Dragon lookup (for tests, same
+    pattern as ``boots_type_match``'s ``item_meta``); production calls (via
+    the registry) always pass only ``(ctx, params)`` and fetch live data.
+    """
     max_allowed = int(params.get("max_deaths", 0))
     radius = int(params.get("nearby_radius", 2000))
-    deaths = deaths_for(ctx, nearby_radius=radius)
+    deaths = deaths_for(ctx, nearby_radius=radius, champion_meta=champion_meta)
     isolated = [d for d in deaths if d.allies_nearby == 0]
     passed = len(isolated) <= max_allowed
     evidence = [
@@ -32,11 +40,14 @@ def isolated_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
 
 
 @register("low_hp_deaths")
-def low_hp_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
+def low_hp_deaths(
+    ctx: MatchContext, params: dict[str, Any],
+    champion_meta: dict[str, Any] | None = None,
+) -> RuleResult:
     """Flag deaths where you were already low HP (lingered instead of backing)."""
     pct = float(params.get("health_pct", 0.35))
     max_allowed = int(params.get("max_deaths", 1))
-    deaths = deaths_for(ctx)
+    deaths = deaths_for(ctx, champion_meta=champion_meta)
     low = [d for d in deaths
            if d.health_pct_before is not None and d.health_pct_before <= pct]
     passed = len(low) <= max_allowed
@@ -54,7 +65,10 @@ def low_hp_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
 
 
 @register("frontmost_deaths")
-def frontmost_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
+def frontmost_deaths(
+    ctx: MatchContext, params: dict[str, Any],
+    champion_meta: dict[str, Any] | None = None,
+) -> RuleResult:
     """Flag deaths where you were the most-forward teammate (engaged first).
 
     Caveat: only evaluated when at least one ally was within ``nearby_radius``
@@ -63,7 +77,7 @@ def frontmost_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
     """
     max_allowed = int(params.get("max_deaths", 1))
     radius = int(params.get("nearby_radius", 2000))
-    deaths = deaths_for(ctx, nearby_radius=radius)
+    deaths = deaths_for(ctx, nearby_radius=radius, champion_meta=champion_meta)
     front = [d for d in deaths if d.is_frontmost]
     passed = len(front) <= max_allowed
     evidence = [
@@ -80,12 +94,15 @@ def frontmost_deaths(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
 
 
 @register("death_cause_summary")
-def death_cause_summary(ctx: MatchContext, params: dict[str, Any]) -> RuleResult:
+def death_cause_summary(
+    ctx: MatchContext, params: dict[str, Any],
+    champion_meta: dict[str, Any] | None = None,
+) -> RuleResult:
     """Informational: breakdown of deaths by killer champion and top damage
     source, to help "analyze your deaths" (the PDF's most-repeated theme).
     Always passes — there's no pass/fail target, only a summary to review.
     """
-    deaths = deaths_for(ctx)
+    deaths = deaths_for(ctx, champion_meta=champion_meta)
     if not deaths:
         return RuleResult("death_cause_summary", True, 1.0, "デスなし。", [])
 

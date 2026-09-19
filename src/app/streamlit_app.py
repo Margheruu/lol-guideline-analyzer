@@ -219,15 +219,30 @@ def main() -> None:
     else:
         def fmt(buy):
             return f"{buy.name}（{buy.timestamp_ms // 60000}分）" if buy else "—"
+
+        def fmt_diff(me_buy, opp_buy):
+            # Only meaningful when BOTH sides have this Nth core -- comparing
+            # my 3rd core's time against an opponent who only built 2 would
+            # compare different amounts of gold spent, not the same milestone.
+            if me_buy is None or opp_buy is None:
+                return "—"
+            diff_min = (me_buy.timestamp_ms - opp_buy.timestamp_ms) // 60000
+            return f"{diff_min:+d} 分"
+
         n = max(len(me_core), len(opp_core))
         if n == 0:
             st.caption("コアアイテムの完成が検出されませんでした。")
         else:
-            item_rows = [{
-                "#": i + 1,
-                "自分": fmt(me_core[i] if i < len(me_core) else None),
-                "対面": fmt(opp_core[i] if i < len(opp_core) else None),
-            } for i in range(n)]
+            item_rows = []
+            for i in range(n):
+                me_buy = me_core[i] if i < len(me_core) else None
+                opp_buy = opp_core[i] if i < len(opp_core) else None
+                item_rows.append({
+                    "#": i + 1,
+                    "自分": fmt(me_buy),
+                    "対面": fmt(opp_buy),
+                    "差分（自分−対面）": fmt_diff(me_buy, opp_buy),
+                })
             st.dataframe(pd.DataFrame(item_rows),
                          use_container_width=True, hide_index=True)
             if me_core and opp_core:
