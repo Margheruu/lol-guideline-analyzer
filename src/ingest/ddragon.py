@@ -50,3 +50,17 @@ def item_data(locale: str = "ja_JP") -> dict[str, Any]:
         resp.raise_for_status()
         cache.write_text(resp.text, encoding="utf-8")
     return json.loads(cache.read_text(encoding="utf-8"))["data"]
+
+
+def champion_data(locale: str = "ja_JP") -> dict[str, Any]:
+    """Champion metadata keyed by championName (e.g. "Sivir") -> name/title/tags."""
+    ASSETS.mkdir(exist_ok=True)
+    cache = ASSETS / f"champion_{locale}.json"
+    if not cache.exists():
+        version = latest_version()
+        url = (f"https://ddragon.leagueoflegends.com/cdn/{version}"
+               f"/data/{locale}/champion.json")
+        resp = httpx.get(url, timeout=30)
+        resp.raise_for_status()
+        cache.write_text(resp.text, encoding="utf-8")
+    return json.loads(cache.read_text(encoding="utf-8"))["data"]

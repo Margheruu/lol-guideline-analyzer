@@ -25,13 +25,15 @@ from streamlit_local_storage import LocalStorage  # noqa: E402
 from src.analysis.deaths import deaths_for  # noqa: E402
 from src.analysis.items import core_items_for  # noqa: E402
 from src.analysis.lane_series import cs_series, opponent_of  # noqa: E402
+from src.eval.roles import (  # noqa: E402
+    ROLE_KEYS, ROLE_LABELS, guidelines_filename, role_for_team_position,
+)
 from src.eval.runner import evaluate, load_guidelines, participant_id_for  # noqa: E402
+from src.ingest.ddragon import champion_data  # noqa: E402
 from src.ingest.riot_client import RiotClient  # noqa: E402
 from src.rules.base import MatchContext  # noqa: E402
 from src.rules.metadata import DATA_NOTES  # noqa: E402
 from src.viz.map_plot import render_combat_map  # noqa: E402
-
-GUIDELINES = ROOT / "config" / "guidelines.yaml"
 
 
 def _bridge_secrets_to_env() -> None:
@@ -77,6 +79,11 @@ def fetch_match(region: str, match_id: str) -> tuple[dict, dict]:
         return client.match(match_id), client.timeline(match_id)
 
 
+@st.cache_data(show_spinner=False)
+def fetch_champion_data() -> dict:
+    return champion_data()
+
+
 def main() -> None:
     # NOTE: UI display text is Japanese (the user's language); code/comments
     # stay English. See CLAUDE.md.
@@ -98,6 +105,12 @@ def main() -> None:
         if riot_id and riot_id != saved_riot_id:
             local_storage.setItem("riot_id", riot_id)
         count = st.slider("表示する試合数", 1, 20, 5)
+
+        # Filled in later (after a match is fetched) with a selectbox
+        # defaulted to that match's own detected role — reserving the slot
+        # here keeps it grouped with the other "who am I reviewing" inputs
+        # above, ahead of the admin panel below.
+        role_slot = st.container()
 
         # Key updates are developer-only (password-gated), not a public
         # field — visitors share the operator's key via secrets/.env, and
@@ -142,15 +155,34 @@ def main() -> None:
                        participant_id_for(match, puuid), match, timeline)
     me = match["info"]["participants"][ctx.participant_id - 1]
 
+    # Default to this match's own detected role, but let the user override
+    # it. Keying by match_id means switching matches re-defaults to the new
+    # match's role (fresh key), while staying on one match preserves a
+    # manual override across reruns (same key -> session_state wins).
+    detected_role = role_for_team_position(me.get("teamPosition"))
+    with role_slot:
+        role_key = st.selectbox(
+            "評価するロール", ROLE_KEYS,
+            index=ROLE_KEYS.index(detected_role),
+            format_func=lambda k: ROLE_LABELS[k],
+            key=f"role_select_{match_id}")
+    guidelines_path = ROOT / "config" / guidelines_filename(role_key)
+
+    try:
+        champion_name = fetch_champion_data().get(
+            me.get("championName"), {}).get("name", me.get("championName"))
+    except Exception:  # noqa: BLE001 — ddragon fetch may fail offline
+        champion_name = me.get("championName")
+
     kda = f"{me.get('kills')}/{me.get('deaths')}/{me.get('assists')}"
     outcome = "勝利" if me.get("win") else "敗北"
-    st.subheader(f"{me.get('championName')} · {me.get('teamPosition')} · "
+    st.subheader(f"{champion_name} · {ROLE_LABELS[role_key]} · "
                  f"KDA {kda} · {outcome}")
 
     left, right = st.columns(2)
     with left:
         st.markdown("### ガイドライン判定")
-        guidelines = load_guidelines(GUIDELINES)
+        guidelines = load_guidelines(guidelines_path)
         labels = {g["id"]: g.get("label", g["id"]) for g in guidelines}
         for r in evaluate(ctx, guidelines):
             name = labels.get(r.rule_id, r.rule_id)

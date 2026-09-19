@@ -6,7 +6,7 @@ project-specific specs. Keep it updated as the project evolves.
 
 **App UI language**: all *user-facing text* is **Japanese** (the user's
 language) — Streamlit labels, rule verdict `message` strings, and the Japanese
-display name per rule via `label:` in `guidelines.yaml`. Code, comments,
+display name per rule via `label:` in each `guidelines_<role>.yaml`. Code, comments,
 identifiers (incl. rule `id`s), file names, and commits stay **English**.
 
 ## Goal

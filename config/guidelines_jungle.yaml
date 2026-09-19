@@ -1,0 +1,112 @@
+# User-authored guidelines. Each entry binds a rule `id` (implemented in
+# src/rules/) to its parameters. `label` is the Japanese display name shown in
+# the app (rule ids stay English). Edit freely — tuning needs no code change.
+#
+# Role: Jungle (teamPosition=JUNGLE). Selected via the sidebar role selector,
+# or auto-detected from the match. See src/eval/roles.py.
+#
+# NOTE: unlike guidelines_adc.yaml (sourced from the user's own ADC theory
+# PDF), these are v1 *starting values* based on general, well-known LoL role
+# norms — not yet validated against the user's own real matches. Retune
+# after reviewing a few matches, same as guidelines_adc.yaml's
+# wards_per_interval note already does for ADC.
+rules:
+  - id: cs_per_minute
+    label: "CS/分（15分）"
+    enabled: true
+    description: "CS-per-minute target at a given minute. Lower than lane
+      roles — jungle camps respawn slower than lane minion waves."
+    params:
+      minute: 15
+      min_cs_per_min: 4.5
+
+  - id: deaths_before_minute
+    label: "早期デス"
+    enabled: true
+    description: "Avoid dying too early."
+    params:
+      before_minute: 8
+      max_deaths: 1
+
+  - id: boots_type_match
+    label: "防御靴の型"
+    enabled: true
+    description: "If you built defensive boots, are they the right resist type
+      for the damage you took? (Offensive/no boots are not evaluated.)"
+    params:
+      threshold: 0.6
+
+  - id: not_behind_at_minute
+    label: "対面ジャングラー差（15分）"
+    enabled: true
+    description: "Not significantly behind the enemy jungler at 15:00 — gold,
+      plus CS and level deficits. Looser CS band than lane roles: pathing
+      and counter-jungling swing camp-clear counts more than a fixed lane
+      wave does."
+    params:
+      minute: 15
+      max_gold_deficit: 600
+      max_cs_deficit: 15
+      max_level_deficit: 1
+
+  - id: isolated_deaths
+    label: "孤立デス"
+    enabled: true
+    description: "Don't die with no teammate nearby (walking first / alone).
+      Looser than lane roles: solo camp clearing means being alone is
+      normal and expected for a jungler, not itself a mistake."
+    params:
+      max_deaths: 2
+      nearby_radius: 2500
+
+  - id: low_hp_deaths
+    label: "低HPデス"
+    enabled: true
+    description: "Don't die after already being low HP (back off / recall)."
+    params:
+      health_pct: 0.35
+      max_deaths: 1
+
+  - id: frontmost_deaths
+    label: "最前線デス"
+    enabled: false  # see caveat below before enabling
+    description: "Flag deaths where you were the most-forward teammate
+      (engaged/dove first). Caveat: only evaluated when >=1 ally was within
+      nearby_radius — a fully isolated death can't be classified as
+      'frontmost of the group', so this under-counts the riskiest deaths.
+      Looser than ADC/backline roles: Jungle is expected to front more as a
+      bruiser/tank-leaning, engage-initiating role. Disabled by default;
+      enable once you've reviewed a few matches' evidence and are
+      comfortable with the blind spot above."
+    params:
+      max_deaths: 2
+      nearby_radius: 2000
+
+  - id: death_cause_summary
+    label: "デス要因サマリー"
+    enabled: true
+    description: "Informational only (always passes): breakdown of deaths by
+      killer champion and top damage source, to support 'analyze your
+      deaths'."
+    params: {}
+
+  - id: kill_participation
+    label: "キル関与率"
+    enabled: true
+    description: "(Kills + assists) / team kills meets a target rate. Uses
+      Riot's own challenges.killParticipation stat. Highest target of the 5
+      roles alongside Support — Jungle is a roam/playmaking role expected
+      in most fights."
+    params:
+      min_participation: 0.65
+
+  - id: wards_per_interval
+    label: "視界確保ペース"
+    enabled: true
+    description: "Wards placed keep pace across fixed intervals through the
+      laning phase. Higher than lane roles — river/objective vision control
+      is a core jungle responsibility."
+    params:
+      interval_minutes: 3
+      min_wards_per_interval: 1.5
+      through_minute: 15

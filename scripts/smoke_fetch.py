@@ -18,6 +18,7 @@ sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1]
 
 from pathlib import Path  # noqa: E402
 
+from src.eval.roles import guidelines_filename, role_for_team_position  # noqa: E402
 from src.eval.runner import evaluate, load_guidelines, participant_id_for  # noqa: E402
 from src.ingest.riot_client import RiotClient  # noqa: E402
 from src.rules.base import MatchContext  # noqa: E402
@@ -67,15 +68,21 @@ def main() -> None:
               f"{kill.get('position')} @ {kill.get('timestamp')}ms" if kill else "none")
 
         # --- end-to-end: evaluate the configured guidelines on this match ---
+        participant_id = participant_id_for(match, puuid)
+        me = match["info"]["participants"][participant_id - 1]
+        role_key = role_for_team_position(me.get("teamPosition"))
         ctx = MatchContext(
             match_id=match_id,
             puuid=puuid,
-            participant_id=participant_id_for(match, puuid),
+            participant_id=participant_id,
             match=match,
             timeline=timeline,
         )
-        guidelines = load_guidelines(Path(__file__).resolve().parents[1] / "config" / "guidelines.yaml")
-        print("\n=== guideline evaluation ===")
+        guidelines_path = (Path(__file__).resolve().parents[1] / "config"
+                           / guidelines_filename(role_key))
+        guidelines = load_guidelines(guidelines_path)
+        print(f"\n=== guideline evaluation (role={role_key}, "
+              f"teamPosition={me.get('teamPosition')}) ===")
         for r in evaluate(ctx, guidelines):
             print(f"{'PASS' if r.passed else 'FAIL'}  {r.rule_id}: {r.message}")
 

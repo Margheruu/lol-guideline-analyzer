@@ -1,6 +1,6 @@
 ---
 name: lol-guideline-adherence-analyzer
-description: Evaluate whether a League of Legends player followed their own predefined guidelines (CS targets, deaths, recall timing, vision, itemization, objective participation) using official Riot API match/timeline data, and visualize the deviations. Use when the user wants to add/edit a guideline rule, ingest and evaluate a match against config/guidelines.yaml, debug a rule verdict, or run/extend this project's Streamlit review app.
+description: Evaluate whether a League of Legends player followed their own predefined guidelines (CS targets, deaths, recall timing, vision, itemization, objective participation), for any of the 5 roles (top/jungle/mid/adc/support), using official Riot API match/timeline data, and visualize the deviations. Use when the user wants to add/edit a guideline rule, ingest and evaluate a match against a config/guidelines_<role>.yaml, debug a rule verdict, or run/extend this project's Streamlit review app.
 ---
 
 # LoL Guideline-Adherence Analyzer
@@ -14,13 +14,20 @@ read it first; this file is the task-oriented "how do I..." guide.
 - `src/rules/` — one module per guideline rule + `registry.py`; rules are
   registered with `@register("<rule_id>")` and are pure functions
   `(MatchContext, params: dict) -> RuleResult` (see `src/rules/base.py`)
-- `src/eval/runner.py` — loads `config/guidelines.yaml`, runs each enabled
-  rule, returns the list of `RuleResult` verdicts
+- `src/eval/runner.py` — loads a `config/guidelines_<role>.yaml`, runs each
+  enabled rule, returns the list of `RuleResult` verdicts
+- `src/eval/roles.py` — the 5 role keys/labels, `teamPosition` → role
+  mapping, and the `guidelines_<role>.yaml` filename helper (shared by the
+  app and `scripts/smoke_fetch.py`)
 - `src/viz/` — Pillow-based map/timeline rendering (**not matplotlib** — its
   Agg renderer crashes in the `ds-claude` env)
-- `src/app/streamlit_app.py` — Streamlit review UI
-- `config/guidelines.yaml` — user-authored rule config (id, params, enabled,
-  Japanese `label:`)
+- `src/app/streamlit_app.py` — Streamlit review UI; sidebar role selector
+  defaults to the match's own detected role, overridable per match
+- `config/guidelines_<role>.yaml` — one file per role (top/jungle/mid/adc/
+  support), each a user-authored rule config (id, params, enabled, Japanese
+  `label:`). Only `guidelines_adc.yaml` comes from the user's own theory
+  PDF; the other 4 are v1 starting values pending real-match tuning (see
+  each file's header comment).
 - `data/raw/` — cached Riot API responses (gitignored, immutable per match)
 - `tests/` — unit tests per rule, fixtures from saved sample timelines
 - `ROADMAP.md` — master ledger of every guideline rule: PDF source, signal,
@@ -39,8 +46,9 @@ read it first; this file is the task-oriented "how do I..." guide.
    `message` is **Japanese** (shown to the user), `rule_id` stays English.
 4. Add a unit test in `tests/` against a saved fixture in `data/raw/`
    (e.g. `match_JP1_589071001.json` / `timeline_JP1_589071001.json`).
-5. Register it in `config/guidelines.yaml` with `id`, `params`, and a
-   Japanese `label:`.
+5. Register it in each relevant role's `config/guidelines_<role>.yaml` with
+   `id`, `params`, and a Japanese `label:` (set `enabled: false` for a role
+   the rule doesn't apply to, e.g. `cs_per_minute` for support).
 6. Flip its `ROADMAP.md` status (🔜 → ✅) in the same change.
 
 ### Ingest and evaluate a match
@@ -83,6 +91,6 @@ redeploy, maintenance). Still do step 3 above once you're back at a PC.
 - Official Riot API only for v1 — no scraping, no replay parsing, no GPU/CV
   (that's Phase 2/3, deliberately deferred; don't pull those in early).
 - `RIOT_API_KEY` from env/`.env` only — never hard-code or commit it.
-- User-facing text (Streamlit labels, rule `message`, `label` in
-  `guidelines.yaml`) is Japanese; code, identifiers, rule `id`s, file names,
-  and commits stay English.
+- User-facing text (Streamlit labels, rule `message`, `label` in each
+  `guidelines_<role>.yaml`) is Japanese; code, identifiers, rule `id`s, file
+  names, and commits stay English.

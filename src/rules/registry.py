@@ -1,4 +1,6 @@
-"""Registry mapping rule ids (used in guidelines.yaml) to rule functions."""
+"""Registry mapping rule ids (used in config/guidelines_<role>.yaml) to rule
+functions.
+"""
 from __future__ import annotations
 
 from typing import Callable

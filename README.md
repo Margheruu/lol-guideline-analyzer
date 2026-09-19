@@ -40,7 +40,9 @@ $env:RIOT_API_KEY = "RGAPI-xxxxxxxx"   # or put it in a .env file (gitignored)
 streamlit run src/app/streamlit_app.py
 ```
 Enter a Riot ID (e.g. `Name#TAG`), pick a recent match, and see the guideline
-verdicts, a death report, and a kill/death map.
+verdicts, a death report, and a kill/death map. The role selector defaults to
+the match's own detected role (top/jungle/mid/adc/support) but can be
+overridden per match.
 
 Other entry points:
 - `python scripts/smoke_fetch.py "Name#TAG" --region asia` — fetch + evaluate + death report
@@ -52,7 +54,8 @@ Other entry points:
 - `src/eval/`   — run rules over a match, aggregate verdicts
 - `src/viz/`    — map plots, timeline charts, scorecards
 - `src/app/`    — Streamlit entry point
-- `config/`     — user-authored `guidelines.yaml`
+- `config/`     — user-authored `guidelines_<role>.yaml`, one per role
+  (top/jungle/mid/adc/support)
 - `data/`       — cached API responses & derived tables (gitignored)
 - `tests/`      — unit tests for rules (fixtures from sample timelines)
 
