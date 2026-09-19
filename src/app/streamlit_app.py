@@ -8,6 +8,7 @@ viz layers — all of which are unit-tested / verified on real data.
 """
 from __future__ import annotations
 
+import hmac
 import os
 import sys
 from pathlib import Path
@@ -45,6 +46,17 @@ def _bridge_secrets_to_env() -> None:
             os.environ["RIOT_API_KEY"] = st.secrets["RIOT_API_KEY"]
     except FileNotFoundError:
         pass
+
+
+def _admin_password() -> str:
+    """The developer-set password gating the key-update panel (Streamlit
+    secrets on Cloud, or ADMIN_PASSWORD in .env for local testing). Empty
+    if unset, which keeps the panel permanently locked.
+    """
+    try:
+        return st.secrets.get("ADMIN_PASSWORD", "") or os.environ.get("ADMIN_PASSWORD", "")
+    except FileNotFoundError:
+        return os.environ.get("ADMIN_PASSWORD", "")
 
 
 @st.cache_data(show_spinner=False)
@@ -86,19 +98,26 @@ def main() -> None:
         if riot_id and riot_id != saved_riot_id:
             local_storage.setItem("riot_id", riot_id)
         count = st.slider("表示する試合数", 1, 20, 5)
-        # Manual key entry (e.g. from a phone): takes priority over secrets /
-        # .env. Dev keys expire after 24h, so this is the quickest way to
-        # swap in a fresh one without touching server config.
-        key_input = st.text_input(
-            "Riot API キー（任意・設定済みなら不要）", type="password",
-            help="developer.riotgames.com の開発キーは24時間で失効します。"
-                 "失効時はここに新しいキーを貼り付けてください。")
-    if key_input:
-        os.environ["RIOT_API_KEY"] = key_input
+
+        # Key updates are developer-only (password-gated), not a public
+        # field — visitors share the operator's key via secrets/.env, and
+        # letting anyone overwrite it would clobber it for every concurrent
+        # visitor (os.environ is process-wide, not per-session).
+        with st.expander("🔧 管理者用"):
+            admin_password = st.text_input("パスワード", type="password",
+                                            key="admin_pw")
+            expected = _admin_password()
+            if admin_password and expected and hmac.compare_digest(admin_password, expected):
+                new_key = st.text_input("新しい Riot API キー", type="password",
+                                         key="admin_key")
+                if new_key:
+                    os.environ["RIOT_API_KEY"] = new_key
+                    st.success("更新しました（次の再起動まで全員に反映されます）")
+            elif admin_password:
+                st.error("パスワードが違います")
 
     if not os.environ.get("RIOT_API_KEY"):
-        st.warning("Riot API キーが設定されていません。サイドバーの入力欄に"
-                   "キーを貼り付けるか、.env / Streamlit secrets で設定してください。")
+        st.warning("Riot API キーが設定されていません。管理者による更新をお待ちください。")
         return
 
     if "#" not in riot_id:
