@@ -123,7 +123,7 @@ rules:
     description: "Deaths during the laning phase (0:00-14:00). Source: Discord
       Common ⑬ (laning = 0-14 min) and ⑯ (2 lane deaths = lane lost). The
       guide ties 14:00 to turret plates falling, which no longer holds (2026
-      data: 72% of plates break after 14:00); 14:00 is kept because the first
+      data: 53% of outer-turret plates break after 14:00); 14:00 is kept because the first
       outer turret falls at a median 14.7 min.
       Pass-rate check (2026-11, 50 games): ~44-53% of player-games fail —
       strict by design; it is the guide's own lost-lane definition."

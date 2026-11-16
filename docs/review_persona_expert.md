@@ -32,7 +32,8 @@ are from 2024-08 – 2024-10.
 | Baron | 20:00 | consistent with 20:00 | earliest kill 21:37 (27 games) |
 | Atakhan | — | **absent** | 0 of 452 elite-monster kills |
 | Dragon | 5:00 | unchanged | earliest kill 5:28 |
-| Turret plates | fall at 14:00 (basis for "laning = 0–14 min") | **persist past 14:00** | 72% of 2,509 plate kills after 14:00; latest 48:39 |
+| Turret plates | fall at 14:00 (basis for "laning = 0–14 min") | **persist past 14:00** | outer turrets only: 53% of 1,437 plate kills after 14:00 (inner/inhibitor turrets also emit plate events and were excluded; an earlier 72% figure mixed them in) |
+| First Blood bonus | +150g | **+100g** | first kill bounty 400 (300 + 100) in 55 of 57 games |
 | Support item | buy World Atlas at start | **auto-granted** — never purchased (only `ITEM_DESTROYED` 3865→3866→3867) | role-bound slot holds a control ward for 82/114 supports |
 | Role quests | — | **every role has one** (`roleBoundItem`): TOP → Unleashed Teleport, ADC → boots in the role slot, JG/MID/SUP quest rewards | match `participants[].roleBoundItem` |
 | Teleport | TOP and MID carry TP | MID 74% TP; TOP only 49% (TP comes from the quest) | summoner spells |

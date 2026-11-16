@@ -27,3 +27,6 @@ Thumbs.db
 
 # Discord server guideline text (third-party, private server) — local only
 docs/discord/
+# Lane-guide PNG/PDF docs + their build sources (derived from the private
+# Discord guides) — local only, hand out directly to players
+docs/guides/
