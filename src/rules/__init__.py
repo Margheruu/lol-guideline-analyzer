@@ -3,6 +3,7 @@ from . import (  # noqa: F401  (register on import)
     death,
     examples,
     itemization,
+    jungle,
     laning,
     participation,
     vision,

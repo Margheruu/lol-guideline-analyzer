@@ -106,7 +106,23 @@ Design notes:
   split (physical/magic) over guessing from enemy champion identity. Enemy CC
   amount (`totalTimeCCDealt`) is **low-confidence** (unit unclear) — avoid.
 
+### Non-ADC role guidelines (Discord lane guides)
+- TOP/JG/MID/SUP rules are sourced from the lane guides in the user's LoL
+  Discord server (local copy `docs/discord/`, **gitignored — never commit or
+  deploy**). `docs/rule_mapping.md` maps each guide claim to a rule (or marks
+  it unmeasurable) and records the pass-rate checks behind every threshold.
+- ADC stays on the user's PDF; Discord-only ADC items are proposals
+  (`enabled: false`).
+- The guides predate major system changes. Take environment facts (objective
+  spawns, plates, role quests, support item) from
+  `docs/review_persona_expert.md`, which is measured from match data, and
+  re-run that review when a major systems change lands.
+- Thresholds are checked against **all 10 participants** of cached games
+  (population baseline), because the author's own non-ADC sample is tiny.
+
 ## Visualization
+- `numpy.linalg` also crashes natively in `ds-claude` (0xC06D007F) — keep
+  small regressions in analysis scripts pure-Python.
 - **Rendered with Pillow, not matplotlib** — matplotlib's Agg renderer crashes
   natively in the `ds-claude` env (STATUS_STACK_BUFFER_OVERRUN). `src/viz/
   map_plot.py` draws on the map image with PIL and returns a PIL Image.

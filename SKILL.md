@@ -25,9 +25,13 @@ read it first; this file is the task-oriented "how do I..." guide.
   defaults to the match's own detected role, overridable per match
 - `config/guidelines_<role>.yaml` — one file per role (top/jungle/mid/adc/
   support), each a user-authored rule config (id, params, enabled, Japanese
-  `label:`). Only `guidelines_adc.yaml` comes from the user's own theory
-  PDF; the other 4 are v1 starting values pending real-match tuning (see
-  each file's header comment).
+  `label:`). `guidelines_adc.yaml` comes from the user's own theory PDF;
+  the other 4 are sourced from the Discord lane guides (local copy in
+  `docs/discord/`, gitignored) and checked against cached matches — see
+  `docs/rule_mapping.md`.
+- `docs/review_persona_expert.md` — expert-reviewer persona + measured
+  environment fact sheet (objective spawns, role quests, plates); re-run on
+  major system changes and never take objective timings from the guides.
 - `data/raw/` — cached Riot API responses (gitignored, immutable per match)
 - `tests/` — unit tests per rule, fixtures from saved sample timelines
 - `ROADMAP.md` — master ledger of every guideline rule: PDF source, signal,
@@ -86,6 +90,8 @@ redeploy, maintenance). Still do step 3 above once you're back at a PC.
   rule's `message`/evidence rather than silently tightening the check).
 - Reuse the cached fixtures in `data/raw/` instead of refetching from the
   live API while iterating.
+- `numpy.linalg` (e.g. `lstsq`) crashes natively in `ds-claude`, like
+  matplotlib — use pure Python for small regressions in analysis scripts.
 
 ## Constraints to respect
 - Official Riot API only for v1 — no scraping, no replay parsing, no GPU/CV

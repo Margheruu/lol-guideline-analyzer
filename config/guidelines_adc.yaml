@@ -16,7 +16,11 @@ rules:
   - id: deaths_before_minute
     label: "早期デス"
     enabled: true
-    description: "Avoid dying too early."
+    description: "Avoid dying too early. Cutoff validated
+      2026-11 (50 games, all players): with max_deaths 1, 8:00 gives the
+      widest win-rate gap among 4-12 min (fail 15%, WR 33% vs 53%; JG 38% vs
+      52%). A single death costs a similar ~300-500g @14 whenever it happens,
+      so this rule's value is catching repeated early deaths."
     params:
       before_minute: 8
       max_deaths: 1
@@ -101,3 +105,26 @@ rules:
       interval_minutes: 3
       min_wards_per_interval: 1
       through_minute: 15
+
+  - id: deaths_in_lane_phase
+    label: "レーン戦デス"
+    enabled: false
+    description: "Deaths during the laning phase (0:00-14:00). Source: Discord
+      Common ⑬ (laning = 0-14 min) and ⑯ (2 lane deaths = lane lost). The
+      guide ties 14:00 to turret plates falling, which no longer holds (2026
+      data: 72% of plates break after 14:00); 14:00 is kept because the first
+      outer turret falls at a median 14.7 min.
+      Pass-rate check (2026-11, 50 games): ~44-53% of player-games fail —
+      strict by design; it is the guide's own lost-lane definition. Disabled for ADC: the user's PDF is authoritative; Discord items are proposals only."
+    params:
+      through_minute: 14
+      max_deaths: 1
+
+  - id: control_ward_rate
+    label: "コントロールワード"
+    enabled: false
+    description: "Control wards placed per 10 game-minutes (volume only — the
+      API has no ward position). Source: Discord Common ㉕ (everyone places
+      one per objective setup). Disabled for ADC: Discord-only proposal (PDF is authoritative)."
+    params:
+      min_per_10min: 0.5

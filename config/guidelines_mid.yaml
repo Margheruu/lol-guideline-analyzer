@@ -10,6 +10,11 @@
 # norms — not yet validated against the user's own real matches. Retune
 # after reviewing a few matches, same as guidelines_adc.yaml's
 # wards_per_interval note already does for ADC.
+#
+# 2026-11: lane-phase rules (not_behind_at_minute level deficit,
+# deaths_in_lane_phase, control_ward_rate, jungle_first_clear) are now
+# sourced from the Discord lane guides and checked against cached matches —
+# see docs/rule_mapping.md.
 rules:
   - id: cs_per_minute
     label: "CS/分（15分）"
@@ -23,7 +28,12 @@ rules:
   - id: deaths_before_minute
     label: "早期デス"
     enabled: true
-    description: "Avoid dying too early."
+    description: "Avoid dying too early. Overlaps deaths_in_lane_phase on
+      purpose (early deaths weigh on the rest of the lane). Cutoff validated
+      2026-11 (50 games, all players): with max_deaths 1, 8:00 gives the
+      widest win-rate gap among 4-12 min (fail 15%, WR 33% vs 53%; JG 38% vs
+      52%). A single death costs a similar ~300-500g @14 whenever it happens,
+      so this rule's value is catching repeated early deaths."
     params:
       before_minute: 8
       max_deaths: 1
@@ -46,7 +56,7 @@ rules:
       minute: 15
       max_gold_deficit: 600
       max_cs_deficit: 12
-      max_level_deficit: 1
+      max_level_deficit: 0  # Discord Common ⑯: any level deficit = lane lost (was 1; see docs/rule_mapping.md)
 
   - id: isolated_deaths
     label: "孤立デス"
@@ -106,3 +116,26 @@ rules:
       interval_minutes: 3
       min_wards_per_interval: 1
       through_minute: 15
+
+  - id: deaths_in_lane_phase
+    label: "レーン戦デス"
+    enabled: true
+    description: "Deaths during the laning phase (0:00-14:00). Source: Discord
+      Common ⑬ (laning = 0-14 min) and ⑯ (2 lane deaths = lane lost). The
+      guide ties 14:00 to turret plates falling, which no longer holds (2026
+      data: 72% of plates break after 14:00); 14:00 is kept because the first
+      outer turret falls at a median 14.7 min.
+      Pass-rate check (2026-11, 50 games): ~44-53% of player-games fail —
+      strict by design; it is the guide's own lost-lane definition."
+    params:
+      through_minute: 14
+      max_deaths: 1
+
+  - id: control_ward_rate
+    label: "コントロールワード"
+    enabled: true
+    description: "Control wards placed per 10 game-minutes (volume only — the
+      API has no ward position). Source: Discord Common ㉕ (everyone places
+      one per objective setup). Laner target set a bit above the 2026-11 population median (0.3-0.5)."
+    params:
+      min_per_10min: 0.5

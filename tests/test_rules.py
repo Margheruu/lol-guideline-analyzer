@@ -1,7 +1,7 @@
 """Unit tests for the example rules."""
 from __future__ import annotations
 
-from src.rules.examples import deaths_before_minute
+from src.rules.examples import deaths_before_minute, deaths_in_lane_phase
 
 
 def test_deaths_before_minute_passes_under_limit(ctx):
@@ -24,3 +24,16 @@ def test_deaths_window_excludes_later_deaths(ctx):
     assert res.evidence == []
 
 
+
+
+def test_deaths_in_lane_phase_counts_through_cutoff(ctx):
+    # Fixture: one death at 5:00 -> within the 0-14 min laning phase.
+    res = deaths_in_lane_phase(ctx, {"through_minute": 14, "max_deaths": 1})
+    assert res.passed and len(res.evidence) == 1
+    res = deaths_in_lane_phase(ctx, {"through_minute": 14, "max_deaths": 0})
+    assert not res.passed
+
+
+def test_deaths_in_lane_phase_ignores_deaths_after_cutoff(ctx):
+    res = deaths_in_lane_phase(ctx, {"through_minute": 4, "max_deaths": 0})
+    assert res.passed
