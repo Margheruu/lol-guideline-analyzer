@@ -214,7 +214,7 @@ def main() -> None:
                 st.caption(f"• {ev.detail}{when}")
     with right:
         st.markdown("### キル / デス マップ")
-        st.image(render_combat_map(ctx), use_container_width=True)
+        st.image(render_combat_map(ctx), width="stretch")
         st.caption("赤 ✕ = デス（○ = 最前列）、緑 = キル、金 = アシスト")
 
     st.markdown("### レーン推移（対面とのCS比較）")
@@ -263,7 +263,7 @@ def main() -> None:
                     "差分（自分−対面）": fmt_diff(me_buy, opp_buy),
                 })
             st.dataframe(pd.DataFrame(item_rows),
-                         use_container_width=True, hide_index=True)
+                         width="stretch", hide_index=True)
             if me_core and opp_core:
                 diff_min = (me_core[0].timestamp_ms - opp_core[0].timestamp_ms) // 60000
                 st.metric("1stコア完成（自分 − 対面）", f"{diff_min:+d} 分")
@@ -284,7 +284,7 @@ def main() -> None:
         "周囲の味方数": d.allies_nearby,
         "最前列": d.is_frontmost,
     } for d in deaths])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
 
 if __name__ == "__main__":
