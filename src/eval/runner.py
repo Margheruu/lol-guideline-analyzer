@@ -21,9 +21,23 @@ def load_guidelines(path: str | Path) -> list[dict[str, Any]]:
 
 
 def participant_id_for(match: dict[str, Any], puuid: str) -> int:
-    """Map a PUUID to its 1-based participant id used in the timeline."""
-    order = match["metadata"]["participants"]
-    return order.index(puuid) + 1
+    """Map a PUUID to its 1-based participant id used in the timeline.
+
+    Looks the player up in ``info.participants`` by puuid. Do NOT use the
+    position in ``metadata.participants``: since ~2026-11-12 Riot returns
+    that list in an order unrelated to ``participantId``, which silently
+    picked another player in the same game.
+    """
+    participants = match["info"]["participants"]
+    for p in participants:
+        if p.get("puuid") == puuid:
+            pid = int(p["participantId"])
+            # Rules index info.participants[pid - 1]; fail loudly if that
+            # ordering assumption ever breaks instead of evaluating someone else.
+            if participants[pid - 1].get("puuid") != puuid:
+                raise ValueError(f"info.participants is not in participantId order ({match['metadata']['matchId']})")
+            return pid
+    raise ValueError(f"puuid not found in match {match['metadata']['matchId']}")
 
 
 def evaluate(

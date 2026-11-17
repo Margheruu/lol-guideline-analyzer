@@ -34,7 +34,9 @@ class MatchContext:
     """Normalized view of one player's match, built from match + timeline.
 
     ``participant_id`` is the 1-based id used inside the timeline; map it from
-    ``puuid`` via the match ``metadata.participants`` order.
+    ``puuid`` with ``src.eval.runner.participant_id_for`` (looks up
+    ``info.participants`` by puuid — never the ``metadata.participants``
+    position, whose order is unrelated to participantId).
     """
 
     match_id: str
