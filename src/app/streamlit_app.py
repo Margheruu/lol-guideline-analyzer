@@ -25,6 +25,7 @@ from streamlit_local_storage import LocalStorage  # noqa: E402
 from src.analysis.deaths import deaths_for  # noqa: E402
 from src.analysis.items import core_items_for  # noqa: E402
 from src.analysis.lane_series import cs_series, opponent_of  # noqa: E402
+from src.analysis.match_summary import match_label  # noqa: E402
 from src.eval.roles import (  # noqa: E402
     ROLE_KEYS, ROLE_LABELS, guidelines_filename, role_for_team_position,
 )
@@ -67,10 +68,18 @@ def fetch_puuid(region: str, game_name: str, tag_line: str) -> str:
         return client.puuid_by_riot_id(game_name, tag_line)
 
 
-@st.cache_data(show_spinner=False)
+# Short TTL so newly played games show up without an app restart.
+@st.cache_data(show_spinner=False, ttl=300)
 def fetch_match_ids(region: str, puuid: str, count: int) -> list[str]:
     with RiotClient(region=region) as client:
         return client.match_ids(puuid, count=count)
+
+
+@st.cache_data(show_spinner=False)
+def fetch_match_detail(region: str, match_id: str) -> dict:
+    """Post-game detail only (immutable) — enough to label the picker."""
+    with RiotClient(region=region) as client:
+        return client.match(match_id)
 
 
 @st.cache_data(show_spinner=False)
@@ -149,7 +158,17 @@ def main() -> None:
         st.warning("この Riot ID の試合が見つかりませんでした。")
         return
 
-    match_id = st.selectbox("試合", match_ids)
+    try:
+        champ_names = {k: v.get("name", k) for k, v in fetch_champion_data().items()}
+    except Exception:  # noqa: BLE001 — labels fall back to Riot ids
+        champ_names = {}
+    try:
+        labels = {mid: match_label(fetch_match_detail(region, mid), puuid, champ_names)
+                  for mid in match_ids}
+    except Exception as exc:  # noqa: BLE001 — surface API errors to the user
+        st.error(f"Riot API リクエストに失敗しました: {exc}")
+        return
+    match_id = st.selectbox("試合", match_ids, format_func=lambda mid: labels.get(mid, mid))
     match, timeline = fetch_match(region, match_id)
     ctx = MatchContext(match_id, puuid,
                        participant_id_for(match, puuid), match, timeline)
